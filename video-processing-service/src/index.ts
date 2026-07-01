@@ -23,8 +23,9 @@ app.post('/downScale', (req, res) => {
         console.log("processing finished");
         res.status(200).send('processing finished successfully');
     })
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     .on('error', function(err: any){
-        let message = "error processing video: " + err.message;
+        const message = "error processing video: " + err.message;
         console.log(message);
         res.status(500).send(message);
     })
@@ -54,8 +55,9 @@ app.post('/extractAudio', (req, res) => {
         console.log('audio extracted');
         res.status(200).send('audio extraction finished successfully');
     })
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     .on('error', function(err: any){
-        let message = 'error extracting audio: ' + err.message;
+        const message = 'error extracting audio: ' + err.message;
         console.log(message);
         res.status(500).send(message);
     })
@@ -86,8 +88,9 @@ app.post('/extractThumbnail', (req, res) => {
         console.log('thumbnail extracted');
         res.status(200).send("thumbnail successfull extracted");
     })
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     .on("error", function(err: any){
-        let message = "error extracting thumbnail: " + err.message;
+        const message = "error extracting thumbnail: " + err.message;
         console.log(message);
         res.status(500).send(message);
     })
