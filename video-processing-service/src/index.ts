@@ -49,7 +49,7 @@ app.post('/extractAudio', (req, res) => {
     // TODO fix: this fails on files with no audio stream 
 
     ffmpeg(inputFilePath)
-    .outputOptions('-vn', '-q:a 0')
+    .outputOptions('-vn', '-q:a', '0')
     .on('end', function(){
         console.log('audio extracted');
         res.status(200).send('audio extraction finished successfully');
