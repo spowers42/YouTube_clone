@@ -44,3 +44,8 @@ Improvements to make:
 This is pretty straight forward.  I use podman on my workstation, so I have Containerfile instead of Dockerfile, even though either would work.  I also don't use the short name, since my podman configuration tries to resolve it externally instead of locally, so I reference the build step stage number in the `--from` statement.  
 
 This also seemed a good time to add a simple health endpoint so that it is quick and easy to check that things are running.  This can be helpful for debugging as the whole system gets built out.
+
+A couple of updates to make the containerfile more production ready are:
+* running as appuser instead of root for increased security
+* using npm ci instead of npm install
+ 
