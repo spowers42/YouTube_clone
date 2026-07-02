@@ -1,0 +1,30 @@
+# Build the service
+FROM node:latest
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+# Container to run the service
+FROM node:latest
+
+RUN apt-get update && apt-get install -y ffmpeg
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install --only=production
+
+COPY --from=0 /app/dist ./dist
+
+EXPOSE 3000
+
+CMD ["npm", "run", "serve"]
+

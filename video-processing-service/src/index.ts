@@ -6,6 +6,10 @@ app.use(express.json());
 
 const port = process.env.port || 3000;
 
+app.get("/health/live", (req, res) => {
+    res.status(200).send("Running 😁")
+})
+
 app.post('/downScale', (req, res) => {
     const inputFilePath = req.body.inputFilePath;
     const outputFilePath = req.body.outputFilePath;
