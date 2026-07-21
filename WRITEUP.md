@@ -48,4 +48,9 @@ This also seemed a good time to add a simple health endpoint so that it is quick
 A couple of updates to make the containerfile more production ready are:
 * running as appuser instead of root for increased security
 * using npm ci instead of npm install
- 
+
+### Connecting to google cloud storage
+
+For this section I decided to add more files than in the tutorial.  The tutorial only uses a single strorage.ts for all of the new methods, including the video processing method.  However since I have three different video processors right now I decided that those need to end up in their own file.  I then put all storage based operations into filestorage.ts, and finally added a util.ts.  In there I have a single cleanup method that simplifies calling the local cleanup methods.  
+
+Inside the actual endpoint handlers there is a reasonable amount of duplicate code right now related to getting the filename, downloading and all of the actions around running the processor.  The only difference really between all of them is which processor and what the output filename is.  This should probably be refactored at some point.  Also there is a bit of confusing because all of the strorage methods just take a filename, but the processors take a full path.  These could be wrapped by a utility that constructs the path and then calls the processor, but I will leave that for a future refactor at this point.  
