@@ -32,21 +32,19 @@ app.post('/downScale', async (req, res) => {
     const outputFileName = `downsampled-${inputFileName}`;
     const inputFilePath = fullRawPath(inputFileName);
     const outputFilePath = fullProcessedPath(outputFileName);
-
-    await downloadRawVideo(inputFileName);
  
     try {
+        await downloadRawVideo(inputFileName);
         // Todo: clean up name vs path
-        downSampleVideo(inputFilePath, outputFilePath);     
+        await downSampleVideo(inputFilePath, outputFilePath);     
+        await uploadProcessedFile(outputFileName);
     } catch (error) {
         console.error(error);
-        await localCleanup(inputFileName, outputFileName);
         return res.status(500).send("Processing Failed");
-    }    
+    }    finally {
+        await localCleanup(inputFileName, outputFileName);
+    }
     
-    await uploadProcessedFile(outputFileName);
-    await localCleanup(inputFileName, outputFileName);
-
     return res.status(200).send("Downscaling completed.")
     
 });
@@ -65,23 +63,24 @@ app.post('/extractAudio', async (req, res) => {
     }
 
     const inputFileName = data.name;
-    const outputFileName = `downsampled-${inputFileName}`;
+    const outputFileName = `audio-${inputFileName}`;
     const inputFilePath = fullRawPath(inputFileName);
     const outputFilePath = fullProcessedPath(outputFileName);
-
-    await downloadRawVideo(inputFileName);
  
     try {
+        await downloadRawVideo(inputFileName);
         // Todo: clean up name vs path
-        extractAudioFromVideo(inputFilePath, outputFilePath);     
+        await extractAudioFromVideo(inputFilePath, outputFilePath);   
+        await uploadProcessedFile(outputFileName);  
     } catch (error) {
         console.error(error);
-        await localCleanup(inputFileName, outputFileName);
         return res.status(500).send("Processing Failed");
     }    
+    finally {
+        await localCleanup(inputFileName, outputFileName);
+    }
     
-    await uploadProcessedFile(outputFileName);
-    await localCleanup(inputFileName, outputFileName);
+    
 
     return res.status(200).send("Audio extraction completed.")
 });
@@ -103,20 +102,19 @@ app.post('/extractThumbnail', async (req, res) => {
     const outputFileName = `thumbnail-${inputFileName}`;
     const inputFilePath = fullRawPath(inputFileName);
     const outputFilePath = fullProcessedPath(outputFileName);
-
-    await downloadRawVideo(inputFileName);
  
     try {
+        await downloadRawVideo(inputFileName);
         // Todo: clean up name vs path
-        extractThumbnail(inputFilePath, outputFilePath);     
+        await extractThumbnail(inputFilePath, outputFilePath); 
+        await uploadProcessedFile(outputFileName);    
     } catch (error) {
         console.error(error);
-        await localCleanup(inputFileName, outputFileName);
+        
         return res.status(500).send("Processing Failed");
-    }    
-    
-    await uploadProcessedFile(outputFileName);
-    await localCleanup(inputFileName, outputFileName);
+    } finally {
+        await localCleanup(inputFileName, outputFileName);
+    }
 
     return res.status(200).send("thumbnail extraction completed.")
 

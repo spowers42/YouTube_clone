@@ -1,8 +1,8 @@
-import { deleteLocalFile, deleteRawVideo } from "./filestorage";
+import { deleteProcessedFile, deleteRawVideo } from "./filestorage";
 
-export async function localCleanup(inputFilePath: string, outputFilePath:string){
+export async function localCleanup(inputFileName: string, outputFileName:string){
     await Promise.all([
-        deleteRawVideo(inputFilePath),
-        deleteLocalFile(outputFilePath)
-    ])
+        deleteRawVideo(inputFileName),
+        deleteProcessedFile(outputFileName)
+    ]);
 }
