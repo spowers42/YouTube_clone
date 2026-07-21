@@ -1,5 +1,10 @@
 import express from 'express';
-import ffmpeg from 'fluent-ffmpeg';
+import { downSampleVideo, extractAudioFromVideo, extractThumbnail } from './videoprocessors';
+import { downloadRawVideo, fullProcessedPath, fullRawPath, setupDirectories, uploadProcessedFile } from './filestorage';
+import { localCleanup } from './util';
+ 
+// local storage for processing videos
+setupDirectories(); 
 
 const app = express();
 app.use(express.json());
@@ -10,95 +15,109 @@ app.get("/health/live", (req, res) => {
     res.status(200).send("Running 😁")
 })
 
-app.post('/downScale', (req, res) => {
-    const inputFilePath = req.body.inputFilePath;
-    const outputFilePath = req.body.outputFilePath;
-
-    if (!inputFilePath){
-        return res.status(400).send("Input file path required");
+app.post('/downScale', async (req, res) => {
+    let data;
+    try {
+        const message = Buffer.from(req.body.message.data, 'base64').toString('utf-8');
+        data = JSON.parse(message);
+        if (!data.name){
+            throw new Error("Invalid message, name is required");
+        } 
+    }catch (error){
+        console.error(error);
+        return res.status(400).send("Bad request, missing filename");
     }
-    if (!outputFilePath){
-        return res.status(400).send("Output file path required");
+
+    const inputFileName = data.name;
+    const outputFileName = `downsampled-${inputFileName}`;
+    const inputFilePath = fullRawPath(inputFileName);
+    const outputFilePath = fullProcessedPath(outputFileName);
+ 
+    try {
+        await downloadRawVideo(inputFileName);
+        // Todo: clean up name vs path
+        await downSampleVideo(inputFilePath, outputFilePath);     
+        await uploadProcessedFile(outputFileName);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Processing Failed");
+    }    finally {
+        await localCleanup(inputFileName, outputFileName);
     }
-
-    ffmpeg(inputFilePath)
-    .outputOptions('-vf', 'scale=-1:360')
-    .on('end', function(){
-        console.log("processing finished");
-        res.status(200).send('processing finished successfully');
-    })
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .on('error', function(err: any){
-        const message = "error processing video: " + err.message;
-        console.log(message);
-        res.status(500).send(message);
-    })
-    .save(outputFilePath);
-
+    
+    return res.status(200).send("Downscaling completed.")
+    
 });
 
-app.post('/extractAudio', (req, res) => {
-    const inputFilePath = req.body.inputFilePath;
-    const outputFilePath = req.body.outputFilePath;
-
-    if (!inputFilePath){
-        return res.status(400).send("Input file path required");
+app.post('/extractAudio', async (req, res) => {
+    let data;
+    try {
+        const message = Buffer.from(req.body.message.data, 'base64').toString('utf-8');
+        data = JSON.parse(message);
+        if (!data.name){
+            throw new Error("Invalid message, name is required");
+        } 
+    }catch (error){
+        console.error(error);
+        return res.status(400).send("Bad request, missing filename");
     }
-    if (!outputFilePath){
-        return res.status(400).send("Output file path required");
-    }
-    if (!outputFilePath.endsWith(".mp3")){
-        return res.status(400).send("Output file path must be .mp3")
-    }
 
-    // TODO fix: this fails on files with no audio stream 
+    const inputFileName = data.name;
+    const outputFileName = `audio-${inputFileName}`;
+    const inputFilePath = fullRawPath(inputFileName);
+    const outputFilePath = fullProcessedPath(outputFileName);
+ 
+    try {
+        await downloadRawVideo(inputFileName);
+        // Todo: clean up name vs path
+        await extractAudioFromVideo(inputFilePath, outputFilePath);   
+        await uploadProcessedFile(outputFileName);  
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Processing Failed");
+    }    
+    finally {
+        await localCleanup(inputFileName, outputFileName);
+    }
+    
+    
 
-    ffmpeg(inputFilePath)
-    .outputOptions('-vn', '-q:a', '0')
-    .on('end', function(){
-        console.log('audio extracted');
-        res.status(200).send('audio extraction finished successfully');
-    })
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .on('error', function(err: any){
-        const message = 'error extracting audio: ' + err.message;
-        console.log(message);
-        res.status(500).send(message);
-    })
-    .save(outputFilePath);
+    return res.status(200).send("Audio extraction completed.")
 });
 
-app.post('/extractThumbnail', (req, res) => {
-    const inputFilePath = req.body.inputFilePath;
-    const outputFilePath = req.body.outputFilePath;
+app.post('/extractThumbnail', async (req, res) => {
+    let data;
+    try {
+        const message = Buffer.from(req.body.message.data, 'base64').toString('utf-8');
+        data = JSON.parse(message);
+        if (!data.name){
+            throw new Error("Invalid message, name is required");
+        } 
+    }catch (error){
+        console.error(error);
+        return res.status(400).send("Bad request, missing filename");
+    }
 
-    if (!inputFilePath){
-        return res.status(400).send("Input file path required");
-    }
-    if (!outputFilePath){
-        return res.status(400).send("Output file path required");
-    }
-    if (!outputFilePath.endsWith(".jpg")){
-        return res.status(400).send("Output file path must be .jpg")
+    const inputFileName = data.name;
+    const outputFileName = `thumbnail-${inputFileName}`;
+    const inputFilePath = fullRawPath(inputFileName);
+    const outputFilePath = fullProcessedPath(outputFileName);
+ 
+    try {
+        await downloadRawVideo(inputFileName);
+        // Todo: clean up name vs path
+        await extractThumbnail(inputFilePath, outputFilePath); 
+        await uploadProcessedFile(outputFileName);    
+    } catch (error) {
+        console.error(error);
+        
+        return res.status(500).send("Processing Failed");
+    } finally {
+        await localCleanup(inputFileName, outputFileName);
     }
 
-    ffmpeg(inputFilePath)
-    .seekInput(10)
-    .size("?x360")
-    .aspect("4:3")
-    .autoPad()
-    .outputOptions('-vframes:v 1')
-    .on("end", function(){
-        console.log('thumbnail extracted');
-        res.status(200).send("thumbnail successfull extracted");
-    })
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .on("error", function(err: any){
-        const message = "error extracting thumbnail: " + err.message;
-        console.log(message);
-        res.status(500).send(message);
-    })
-    .save(outputFilePath);
+    return res.status(200).send("thumbnail extraction completed.")
+
 });
 
 
