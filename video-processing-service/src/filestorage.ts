@@ -9,8 +9,8 @@ const rawVideoBucketName = "spp-yt-raw-videos";
 //Storage for downsampled videos, audio files, and thumbnails.  
 const processedFilesBucketName = "spp-yt-processed-files";
 
-const localRawVideoPath = "./raw-videos";
-const localProcessedFilePath = "./processed-files";
+const localRawVideoPath = "./storage/raw-videos";
+const localProcessedFilePath = "./storage/processed-files";
 
 /////////////////////////////////////////////////////////////////////
 // File Path utils

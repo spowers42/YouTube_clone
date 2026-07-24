@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  IMAGE_NAME: video-processing-service
+
+tasks:
+  format:
+    desc: Format using eslint
+    cmds:
+      - npm run lint:fix
+    silent: true
+
+  build:
+    desc: Build a local container image.
+    cmds:
+      - podman build -t {{.IMAGE_NAME}} .
+    silent: true
+    
+  run:
+    desc: Run the local container image. 
+    cmds:
+      - podman run -rm -p 3000:3000 -d {{.IMAGE_NAME}}:latest
+    silent: true
+
+  deps:
+    desc: Install node dependencies.
+    cmds:
+      - npm i
