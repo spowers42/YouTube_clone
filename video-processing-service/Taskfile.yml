@@ -3,7 +3,7 @@
 version: '3'
 
 vars:
-  CONTAINER_TAG: video-processing-service
+  IMAGE_NAME: video-processing-service
 
 tasks:
   format:
@@ -15,11 +15,16 @@ tasks:
   build:
     desc: Build a local container image.
     cmds:
-      - podman build -t {{.CONTAINER_TAG}} .
+      - podman build -t {{.IMAGE_NAME}} .
     silent: true
     
   run:
     desc: Run the local container image. 
     cmds:
-      - podman run -p 3000:3000 -d {{.CONTAINER_TAG}}:latest
+      - podman run -rm -p 3000:3000 -d {{.IMAGE_NAME}}:latest
     silent: true
+
+  deps:
+    desc: Install node dependencies.
+    cmds:
+      - npm i

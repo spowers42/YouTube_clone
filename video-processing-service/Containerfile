@@ -29,7 +29,7 @@ RUN mkdir -p /app/storage/
 
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 RUN chown -R appuser:appgroup /app/storage && \
-    chmod +rw /app/storage
+    chmod 760 /app/storage
 USER appuser
 
 EXPOSE 3000
