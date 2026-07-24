@@ -25,7 +25,11 @@ RUN npm ci --omit=dev
 
 COPY --from=0 /app/dist ./dist
 
+RUN mkdir -p /app/storage/
+
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+RUN chown -R appuser:appgroup /app/storage && \
+    chmod +rw /app/storage
 USER appuser
 
 EXPOSE 3000
